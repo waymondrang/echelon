@@ -13,14 +13,16 @@ async function votekick(discord, msg, mongo, commands, content, config) {
             voteboard.setTitle('Uh Oh! A votekick has been invoked!')
             voteboard.setDescription(`A votekick has been started for <@!${mentions[0].userID}> by <@!${msg.author.id}>!\nYou have \`${config['polltime']} minute(s)\` to enter the polls.\n\nIf you vote for both, your vote will not be counted.`)
             voteboard.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-            voteboard.setFooter('Echelon v1.0')
+            voteboard.setFooter('Echelon v1.1')
             msg.channel.send(`<@${mentions[0].userID}> <@!${msg.author.id}>`, voteboard).then(async message => {
-                await mongo.db(msg.guild.id).collection('votekick-polls').insertOne({
-                    _id: message.id,
-                    "started-by": msg.author.id,
-                    for: mentions[0].id,
-                    ended: false,
-                })
+                if (mongo) {
+                    await mongo.db(msg.guild.id).collection('votekick-polls').insertOne({
+                        _id: message.id,
+                        "started-by": msg.author.id,
+                        for: mentions[0].id,
+                        ended: false,
+                    })
+                }
                 Promise.race([
                     message.react('🟢'),
                     message.react('🔴')
@@ -34,13 +36,15 @@ async function votekick(discord, msg, mongo, commands, content, config) {
                 collector.on('end', async collected => {
                     console.log('Votekick ended!')
                     msg.channel.send('Votekick ended! Gathering results...')
-                    await mongo.db(msg.guild.id).collection('votekick-polls').updateOne({
-                        _id: message.id
-                    }, {
-                        $set: {
-                            ended: true
-                        }
-                    })
+                    if (mongo) {
+                        await mongo.db(msg.guild.id).collection('votekick-polls').updateOne({
+                            _id: message.id
+                        }, {
+                            $set: {
+                                ended: true
+                            }
+                        })
+                    }
                     var results = collected.array()
                     var votes = {};
                     for (var raw of results) {
@@ -67,13 +71,18 @@ async function votekick(discord, msg, mongo, commands, content, config) {
                     embed.addField(`Voted no:`, `\`${no.length}\``, true)
                     embed.addField(`Final verdict:`, `<@${mentions[0].userID}> is ${kick == 'draw' ? "lucky! its a draw!" : kick ? 'getting kicked!' : 'safe! for now...'}`)
                     embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                    embed.setFooter('Echelon v1.0')
+                    embed.setFooter('Echelon v1.1')
                     msg.channel.send(`<@${mentions[0].userID}> <@!${msg.author.id}>`, embed)
                 });
             })
         }
     } else {
-        msg.channel.send('You must mention a user to votekick!')
+        var embed = new discord.MessageEmbed()
+        embed.setTitle('Missing parameters!')
+        embed.setDescription(`The proper use of this command is \`${config['prefix']}${commands[content[0]].usage || '[n/a]'}\``)
+        embed.setColor(16711680)
+        embed.setFooter('Echelon v1.1')
+        msg.channel.send(embed)
     }
 }
 

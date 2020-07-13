@@ -1,7 +1,5 @@
-config.json
 mongo-setup.js
 graveyard.js
 fetch-test.js
-banned-words.json
 node_modules
 .env

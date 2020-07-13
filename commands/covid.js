@@ -8,7 +8,7 @@ async function covid(discord, msg, mongo, commands, content, config) {
         if (index !== -1) {
             var covid = covid[index]
             var embed = new discord.MessageEmbed()
-            embed.setFooter('Echelon v1.0')
+            embed.setFooter('Echelon v1.1')
             embed.setTitle(`\`${covid.state.toLowerCase() || `[n/a]`}\` COVID-19 statistics`)
             embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
             embed.setDescription('Data provided by the [Covid Tracking Project](https://covidtracking.com/)')
@@ -21,7 +21,7 @@ async function covid(discord, msg, mongo, commands, content, config) {
     } else {
         var covid = await fetch('https://covidtracking.com/api/v1/us/current.json').then(async response => (await response.json())[0])
         var embed = new discord.MessageEmbed()
-        embed.setFooter('Echelon v1.0')
+        embed.setFooter('Echelon v1.1')
         embed.setTitle(`COVID-19 Statistics`)
         embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
         embed.setDescription('Data provided by the [Covid Tracking Project](https://covidtracking.com/)')

@@ -2,17 +2,23 @@ const discord = require("discord.js");
 const commands = require('./commands.json')
 const config = require("./config.json");
 const client = new discord.Client()
+const dotenv = require('dotenv')
+dotenv.config();
 const MongoClient = require('mongodb').MongoClient;
+const uri = process.env.MONGO_URI;
 const {
     banned,
     special
 } = require('./banned-words.json')
 const mastereg = new RegExp((banned.map(word => word.split('').map(letter => letter + '+').join('\\s*'))).concat(special).join("|"));
 
-var mongo = new MongoClient(client['mongo-uri'], {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+if (config['mongo-uri']) {
+    var mongo = new MongoClient(config['mongo-uri'], {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    });
+}
+
 
 client.once('ready', async () => {
     console.log('podiumbot initializing!')
@@ -20,7 +26,16 @@ client.once('ready', async () => {
         client.user.setActivity(`${config['prefix']}help`, {
             type: `CUSTOM_STATUS`
         })
-        await mongo.connect();
+        if (config['mongo-uri']) {
+            try {
+                await mongo.connect();
+                console.log('connected to mongo database!')
+            } catch (err) {
+                console.log(err)
+            }
+        } else {
+            console.log('no mongo database specified!')
+        }
     } catch (err) {
         console.log(err)
     } finally {
@@ -31,54 +46,58 @@ client.once('ready', async () => {
 var helpmessage = new discord.MessageEmbed()
 helpmessage.setTitle('`available commands:`');
 helpmessage.setDescription(`\`[brackets]\` can be used to surround a parameter that contains more than one word\neg. \`${config['prefix']}example [echelon bot] [is the best]\``)
-helpmessage.setFooter('Echelon v1.0');
+helpmessage.setFooter('Echelon v1.1');
 for (command in commands) {
     helpmessage.addField(`${command}`, `\`${config['prefix']}${commands[command]['usage']}\``, true)
 }
 console.log('help message generated!')
 
 client.on('message', async msg => {
-    await mongo.db(msg.guild.id).collection('user-data').updateOne({
-        _id: msg.author.id
-    }, {
-        $inc: {
-            "messages-sent": 1
-        },
-        $set: {
-            displayName: msg.member.displayName,
-            username: msg.member.user.username
-        }
-    }, {
-        upsert: true
-    })
-    if (mastereg.test(msg.content.toLowerCase())) {
-        console.log(`${msg.author.username} said a bad word in ${msg.guild.name}!`)
-        msg.react('⚠️');
+    if (config['mongo-uri']) {
         await mongo.db(msg.guild.id).collection('user-data').updateOne({
-            _id: msg.member.id
+            _id: msg.author.id
         }, {
             $inc: {
-                "bad-words": 1
+                "messages-sent": 1
+            },
+            $set: {
+                displayName: msg.member.displayName,
+                username: msg.member.user.username
             }
+        }, {
+            upsert: true
         })
+        if (mastereg.test(msg.content.toLowerCase())) {
+            console.log(`${msg.author.username} said a bad word in ${msg.guild.name}!`)
+            msg.react('⚠️');
+            await mongo.db(msg.guild.id).collection('user-data').updateOne({
+                _id: msg.member.id
+            }, {
+                $inc: {
+                    "bad-words": 1
+                }
+            })
+        }
     }
     if (msg.content.toString().startsWith(config['prefix'])) {
-        await mongo.db(msg.guild.id).collection('user-data').updateOne({
-            _id: msg.member.id
-        }, {
-            $inc: {
-                "invoked-bot": 1
-            }
-        })
+        if (config['mongo-uri']) {
+            await mongo.db(msg.guild.id).collection('user-data').updateOne({
+                _id: msg.member.id
+            }, {
+                $inc: {
+                    "invoked-bot": 1
+                }
+            })
+        }
         var content = msg.content.toString().toLowerCase().replace(/  +/g, ' ').match(/\[.*?\]|\S+/gm).map(each => each.replace(/[\[\]]/gm, '').replace(/\s+$/gm, ''))
-        content[0] = content[0].replace(/;/g, '')
+        content[0] = content[0].replace(config['prefix'], '')
         console.log(content)
         if (content[0] == `help`) {
             console.log(`${msg.author.username} requested for help in ${msg.guild.name}`)
             if (content[1]) {
                 if (commands[content[1]]) {
                     var help = new discord.MessageEmbed()
-                    help.setFooter('Echelon v1.0')
+                    help.setFooter('Echelon v1.1')
                     help.setTitle(`\`${config['prefix']}${content[1]}\``)
                     help.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                     help.setDescription(commands[content[1]]['description'])
@@ -111,4 +130,8 @@ client.on('message', async msg => {
     }
 })
 
-client.login(config['token']);
+if (config['token']) {
+    client.login(config['token']);
+} else {
+    console.log('no discord token found! please add one in the config.json file.')
+}
