@@ -10,7 +10,7 @@ Echelon comes equipped with some helpful features out-of-the-box.
 
 ## Custom Profanity Filter
 
-Within the `banned-words.json` file, there are two arrays—one named `banned` and the other `special`. The `banned` array will contain a list of plaintext words that are to be blocked. The `special` array will contain premade regex expressions.
+Within the `banned-words.json` file, there are two arrays—one named `banned` and the other `special`. The `banned` array will contain a list of plaintext words that are to be blocked. Any premade regex expressions will go into the `special` array.
 
 Here is an example:
 ```

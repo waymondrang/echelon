@@ -21,7 +21,7 @@ if (config['mongo-uri']) {
 
 
 client.once('ready', async () => {
-    console.log('podiumbot initializing!')
+    console.log('Echelon initializing!')
     try {
         client.user.setActivity(`${config['prefix']}help`, {
             type: `CUSTOM_STATUS`
@@ -39,7 +39,7 @@ client.once('ready', async () => {
     } catch (err) {
         console.log(err)
     } finally {
-        console.log('podiumbot done loading!')
+        console.log('Echelon done loading!')
     }
 })
 
