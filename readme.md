@@ -20,10 +20,12 @@ Here is an example:
 }
 ```
 
-The following words *will* trigger this configuration:
+###### The following words *will* trigger this configuration:
+
 `bapple` `app pple` `bannnana` `b a n a n a` `oorangege` `yoo` `hhi`
 
-The following words *will not* trigger the configuration:
+###### The following words *will not* trigger the configuration:
+
 `b a n n n a n a` `byoo` `hiya` `yoop`
 
 #### Practical Commands
