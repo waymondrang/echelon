@@ -1,0 +1,64 @@
+{
+    "about": {
+        "description": "Learn more about the echelon bot and how it was made!",
+        "filename": "about.js",
+        "usage": "about"
+    },
+    "apex": {
+        "description": "Get apex stats for yourself or a homie",
+        "filename": "apex.js",
+        "more-info": {
+            "platforms": "`pc, ps4, x1`"
+        },
+        "usage": "apex [platform] [username]"
+    },
+    "covid": {
+        "description": "Retrieves us covid statistics from [the covid tracking project](https://covidtracking.com/)\n`[state code]` is an optional field.",
+        "filename": "covid.js",
+        "more-info": {
+            "disclaimer": "Information accuracy is subject on [the covid tracking project](https://covidtracking.com/)'s sources. Find out more [here](https://covidtracking.com/about-data/sources)."
+        },
+        "usage": "covid [state code]"
+    },
+    "genius": {
+        "description": "Retrieve lyrics from genius for a song",
+        "filename": "genius.js",
+        "more-info": {
+            "important": "If querying more than one word, (eg. Bon Iver) `[use brackets]`"
+        },
+        "usage": "genius [song, album, artist]"
+    },
+    "help": {
+        "description": "Displays the available commands. `[command]` is an optional field.",
+        "usage": "help [command]"
+    },
+    "lol": {
+        "description": "Get basic League of Legends stats for you or a homie",
+        "filename": "lol.js",
+        "usage": "lol [username]"
+    },
+    "mystats": {
+        "description": "Bot-generated Discord chat statistics for user",
+        "filename": "mystats.js",
+        "more-info": {
+            "stored info": "`Messages sent`\n`Bad words typed`\n`Commands used`"
+        },
+        "usage": "mystats"
+    },
+    "serverstats": {
+        "description": "Vanilla and bot-generated Discord statistics for server",
+        "filename": "serverstats.js",
+        "more-info": {
+            "stored info": "`Total messages sent`\n`Total bad words typed`\n`Total commands typed`"
+        },
+        "usage": "serverstats"
+    },
+    "votekick": {
+        "description": "Start a votekick for a member of the server.",
+        "filename": "votekick.js",
+        "more-info": {
+            "disclaimer": "This *will* actually kick the user, if granted the permissions to do so."
+        },
+        "usage": "votekick @user"
+    }
+}
