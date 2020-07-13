@@ -28,12 +28,12 @@ The following words *will not* trigger the configuration:
 #### Practical Commands
 Echelon comes with 8 prebuilt commands:
 
-|   Requirements   |         Command         |
-|:----------------:|:-----------------------:|
-|       None       |     `about` `covid`     |
-|     API Keys     |  `apex` `genius` `lol`  |
-|      MongoDB     | `mystats` `serverstats` |
-| Work-in-Progress |        `votekick`       |
+|         Commands        |   Requirements   |
+|:-----------------------:|:----------------:|
+|     `about` `covid`     |       None       |
+|  `apex` `genius` `lol`  |     API Keys     |
+| `mystats` `serverstats` |      MongoDB     |
+|        `votekick`       | Work-in-Progress |
 
 ##### Command Prefix
 
@@ -41,7 +41,7 @@ The default command prefix for Echelon is `!`, but can be easily changed in the 
 
 ##### API Keys
 
-The `apex`, `genius`, and `lol` commands fetches data from services that require API keys. `covid` is does not require an API key because it relies on a public API. Read more about the COVID-19 API [here](https://covidtracking.com/data/api).
+The `apex`, `genius`, and `lol` commands fetch data from services that require API keys. `covid` is does not require an API key as it relies on a public API. Read more about the COVID-19 API [here](https://covidtracking.com/data/api). If you wish to use these commands, obtain API keys from the services listed below.
 
 |  Command |            Service            |              Website             |
 |:--------:|:-----------------------------:|:--------------------------------:|
@@ -51,8 +51,8 @@ The `apex`, `genius`, and `lol` commands fetches data from services that require
 
 #### MongoDB Support
 
-By linking Echelon to a MongoDB database, Echelon will collect information about the users in the server(s), including the number of commands used and the amount of bad words typed. A different database is used for each server, making user data independent.
+By linking Echelon to a MongoDB database, Echelon will collect information about the users in each server, including the number of commands used and the amount of bad words typed. A different database is used for each server, making user data independent.
 
-If no MongoDB database is linked, the bot and all of the commands will still work!
+If no MongoDB database is linked, the bot will still work, but some commands will be disabled, as they rely on the database.
 
 
