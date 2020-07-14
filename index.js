@@ -19,7 +19,6 @@ if (config['mongo-uri']) {
     });
 }
 
-
 client.once('ready', async () => {
     console.log('Echelon initializing!')
     try {
