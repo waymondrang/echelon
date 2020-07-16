@@ -1,4 +1,6 @@
-async function serverstats(discord, msg, mongo, commands, content, config) {
+const discord = require("discord.js");
+
+async function serverstats(msg, mongo, commands, content, config) {
     console.log(`${msg.author.username} requested server stats in ${msg.guild.name}`)
     var response = new discord.MessageEmbed()
     response.setTitle(`\`${msg.guild.name}\` server stats`)
@@ -29,12 +31,12 @@ async function serverstats(discord, msg, mongo, commands, content, config) {
         reminder.setTitle(`No MongoDB Linked!`)
         reminder.setDescription(`Link a MongoDB to unlock the full potential of this command!`)
         reminder.setColor(16711680)
-        reminder.setFooter('Echelon v1.1')
+        reminder.setFooter('Echelon v2.0')
         msg.channel.send(reminder)
     }
     //response.setDescription(`as of ${(new Date(serverdata.joined)).toLocaleDateString()}`)
     response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-    response.setFooter('Echelon v1.1')
+    response.setFooter('Echelon v2.0')
     msg.channel.send(response)
 
 }

@@ -45,6 +45,28 @@
         },
         "usage": "mystats"
     },
+    "remind": {
+        "description": "Set a reminder for yourself or the homies",
+        "filename": "remind.js",
+        "usage": "remind @user(s) -t (time) -m (message)",
+        "more-info": {
+            "time format": "Use `HH:MM` or just `HH` + `AM` and `PM`. \nexmaples: `11:34 PM`, `3am`, `4:44pm`",
+            "additional Info": "The `-t` and `-m` tags can be used in any order.",
+            "example": "`remind -t [3:30 pm] -m 'wake up!' @user`",
+            "reminder": "Spaces in the `time` or `message` parameters must be surrounded in either `[brackets]`, `\"double quotes\"`, or `'single quotes'`"
+        },
+        "options": ["list"]
+    },
+    "remindold": {
+        "description": "This is the old remind command! Use `remind` instead.",
+        "filename": "remindold.js",
+        "usage": "remindold @user(s) [time] [message]",
+        "more-info": {
+            "time format": "Use `HH:MM:SS` + `AM` and `PM`. \neg. `11:34:00 PM`",
+            "reminder": "Spaces in the `time` or `message` parameters must be surrounded in either `[brackets]`, `\"double quotes\"`, or `'single quotes'`"
+        },
+        "options": ["list"]
+    },
     "serverstats": {
         "description": "Vanilla and bot-generated Discord statistics for server",
         "filename": "serverstats.js",

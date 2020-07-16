@@ -19,13 +19,48 @@ if (config['mongo-uri']) {
     });
 }
 
+async function notify(mongo, client) {
+    var time = new Date().getTime()
+    //console.log(time)
+    var result = await mongo.db('remind').collection('index').find({
+        notified: false,
+        time: {
+            $lt: time
+        }
+    })
+    if (result) {
+        var reminders = await result.toArray()
+        reminders.forEach(async reminder => {
+            if (!reminder.notified) {
+                console.log('sending notification...');
+                var response = new discord.MessageEmbed();
+                response.setTitle(`You have a reminder!`);
+                response.setDescription(`${reminder.message}\n\nCreate your own reminder using the \`${config['prefix']}remind\` command!`);
+                response.addField(`Created By`, `<@!${reminder.author}>`);
+                response.addField(`Time`, `${new Date(reminder.time).toLocaleTimeString()}`);
+                response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
+                response.setFooter('Echelon v2.0')
+                client.channels.cache.get(reminder.channel).send(`${reminder.mentions.join(' ')}`, response)
+                await mongo.db('remind').collection('index').updateOne({
+                    _id: reminder._id
+                }, {
+                    $set: {
+                        notified: true
+                    }
+                })
+            }
+        })
+    }
+}
+
+
 client.once('ready', async () => {
-    console.log('Echelon initializing!')
+    console.log('echelon initializing!')
     try {
         client.user.setActivity(`${config['prefix']}help`, {
             type: `CUSTOM_STATUS`
         })
-        if (config['mongo-uri']) {
+        if (mongo) {
             try {
                 await mongo.connect();
                 console.log('connected to mongo database!')
@@ -38,14 +73,20 @@ client.once('ready', async () => {
     } catch (err) {
         console.log(err)
     } finally {
-        console.log('Echelon done loading!')
+        console.log('echelon done loading!')
+        if (mongo) {
+            notify(mongo, client)
+            setInterval(() => {
+                notify(mongo, client)
+            }, 30000)
+        }
     }
 })
 
 var helpmessage = new discord.MessageEmbed()
 helpmessage.setTitle('`available commands:`');
 helpmessage.setDescription(`\`[brackets]\` can be used to surround a parameter that contains more than one word\neg. \`${config['prefix']}example [echelon bot] [is the best]\``)
-helpmessage.setFooter('Echelon v1.1');
+helpmessage.setFooter('Echelon v2.0');
 for (command in commands) {
     helpmessage.addField(`${command}`, `\`${config['prefix']}${commands[command]['usage']}\``, true)
 }
@@ -88,7 +129,7 @@ client.on('message', async msg => {
                 }
             })
         }
-        var content = msg.content.toString().toLowerCase().replace(/  +/g, ' ').match(/\[.*?\]|\S+/gm).map(each => each.replace(/[\[\]]/gm, '').replace(/\s+$/gm, ''))
+        var content = msg.content.toString().toLowerCase().replace(/  +/g, ' ').match(/\".*?\"|\'.*?\'|\[.*?\]|\S+/gm).map(each => each.replace(/[\[\]\"\']/gm, '').trim())
         content[0] = content[0].replace(config['prefix'], '')
         console.log(content)
         if (content[0] == `help`) {
@@ -96,7 +137,7 @@ client.on('message', async msg => {
             if (content[1]) {
                 if (commands[content[1]]) {
                     var help = new discord.MessageEmbed()
-                    help.setFooter('Echelon v1.1')
+                    help.setFooter('Echelon v2.0')
                     help.setTitle(`\`${config['prefix']}${content[1]}\``)
                     help.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                     help.setDescription(commands[content[1]]['description'])
@@ -115,7 +156,7 @@ client.on('message', async msg => {
         } else if (commands[content[0]]) {
             try {
                 if (commands[content[0]].filename) {
-                    require(`${config['commandspath']}/${commands[content[0]].filename}`)(discord, msg, mongo, commands, content, config);
+                    require(`${config['commandspath']}/${commands[content[0]].filename}`)(msg, mongo, commands, content, config);
                 } else {
                     console.log(`command exists in commands.json but the .js file could not be located!`)
                 }
