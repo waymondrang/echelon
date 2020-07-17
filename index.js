@@ -40,7 +40,7 @@ async function notify(mongo, client) {
                     response.addField(`Created By`, `<@!${reminder.author}>`);
                     response.addField(`Time`, `${new Date(reminder.time).toLocaleTimeString()}`);
                     response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                    response.setFooter('Echelon v1.1')
+                    response.setFooter('Echelon v2.0')
                     reminder.mentions.forEach(mention => {
                         client.users.cache.get(mention).send(response);
                     })
@@ -52,7 +52,7 @@ async function notify(mongo, client) {
                     response.addField(`Created By`, `<@!${reminder.author}>`);
                     response.addField(`Time`, `${new Date(reminder.time).toLocaleTimeString()}`);
                     response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                    response.setFooter('Echelon v1.1')
+                    response.setFooter('Echelon v2.0')
                     client.channels.cache.get(reminder.channel).send(`${reminder.mentions.map(mention => `<@!${mention}>`).join(' ')}`, response)
                 }
                 await mongo.db('remind').collection('index').updateOne({
@@ -100,7 +100,7 @@ client.once('ready', async () => {
 var helpmessage = new discord.MessageEmbed()
 helpmessage.setTitle('`available commands:`');
 helpmessage.setDescription(`\`[brackets]\` can be used to surround a parameter that contains more than one word\neg. \`${config['prefix']}example [echelon bot] [is the best]\``)
-helpmessage.setFooter('Echelon v1.1');
+helpmessage.setFooter('Echelon v2.0');
 for (command in commands) {
     helpmessage.addField(`${command}`, `\`${config['prefix']}${commands[command]['usage']}\``, true)
 }
@@ -153,7 +153,7 @@ client.on('message', async msg => {
                     if (content[1]) {
                         if (commands[content[1]]) {
                             var help = new discord.MessageEmbed()
-                            help.setFooter('Echelon v1.1')
+                            help.setFooter('Echelon v2.0')
                             help.setTitle(`\`${config['prefix']}${content[1]}\``)
                             help.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                             help.setDescription(commands[content[1]]['description'])
