@@ -1,5 +1,6 @@
 {
     "prefix": "!",
+    "option-prefix": "--",
     "token": "",
     "riotkey": "",
     "geniustoken": "",

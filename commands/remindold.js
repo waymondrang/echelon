@@ -4,7 +4,17 @@ const {
 
 const discord = require("discord.js");
 
-async function remind(msg = new discord.Message, mongo = new MongoClient, commands, content, config, client = new discord.Client()) {
+/**
+ * 
+ * @param {discord.Message} msg 
+ * @param {MongoClient} mongo 
+ * @param {*} commands 
+ * @param {*} content 
+ * @param {*} config 
+ * @param {discord.Client} client 
+ */
+
+async function remind(msg, mongo, commands, content, config, client) {
     if (mongo) {
         var optionsreg = new RegExp(`${config['option-prefix']}\\S*`, "gm")
         var command = content.filter(value => optionsreg.test(value));
