@@ -50,12 +50,12 @@
         "filename": "remind.js",
         "usage": "remind @user(s) -t (time) -m (message)",
         "more-info": {
-            "time format": "Use `HH:MM` or just `HH` + `AM` and `PM`. \nexmaples: `11:34 PM`, `3am`, `4:44pm`",
+            "time format": "Use **HH:MM** or just **HH** + AM or PM. \nFor Example: `11:34 PM` `3am` `4:44pm`",
             "additional Info": "The `-t` and `-m` tags can be used in any order.",
-            "example": "`remind -t [3:30 pm] -m 'wake up!' @user`",
-            "reminder": "Spaces in the `time` or `message` parameters must be surrounded in either `[brackets]`, `\"double quotes\"`, or `'single quotes'`"
+            "example": "`remind -t [3:30 pm] -m 'wake up!' @andrew`",
+            "reminder": "Parameters that include spaces must be surrounded by `[brackets]`, `\"double quotes\"`, or `'single quotes'`"
         },
-        "options": ["list"]
+        "options": ["list", "pm"]
     },
     "remindold": {
         "description": "This is the old remind command! Use `remind` instead.",

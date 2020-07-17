@@ -4,7 +4,7 @@ const {
 
 const discord = require("discord.js");
 
-async function remind(msg = new discord.Message, mongo = new MongoClient, commands, content, config) {
+async function remind(msg = new discord.Message, mongo = new MongoClient, commands, content, config, client = new discord.Client()) {
     if (mongo) {
         var optionsreg = new RegExp(`${config['option-prefix']}\\S*`, "gm")
         var command = content.filter(value => optionsreg.test(value));
@@ -15,7 +15,7 @@ async function remind(msg = new discord.Message, mongo = new MongoClient, comman
                 var reminders = await results.toArray()
                 var response = new discord.MessageEmbed()
                 response.setTitle("Pending Reminders")
-                response.setFooter('Echelon v2.0')
+                response.setFooter('Echelon v1.1')
                 response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                 reminders.forEach(reminder => {
                     response.addField(`ID: \`${reminder._id.toString().substr(0, 10)}...\``, `**By:** <@!${reminder.author}>\n**Message:** ${reminder.message}\n**Time:** ${new Date(reminder.time).toLocaleTimeString()}`)
@@ -25,7 +25,7 @@ async function remind(msg = new discord.Message, mongo = new MongoClient, comman
                 var response = new discord.MessageEmbed();
                 response.setTitle('Invalid Option!')
                 response.setDescription(`Valid options include ${commands[content[0]].options.map(option => `\`${config['option-prefix']}${option}\``).join(' ')}`)
-                response.setFooter('Echelon v2.0')
+                response.setFooter('Echelon v1.1')
                 response.setColor(16711680)
                 msg.channel.send(response)
             }
@@ -55,7 +55,7 @@ async function remind(msg = new discord.Message, mongo = new MongoClient, comman
                         response.addField(`Message`, `${message}`);
                         response.addField(`Time`, `${remindtime.toLocaleTimeString()}`)
                         response.setDescription(`Users will be automagically mentioned in this channel at the specified time.`)
-                        response.setFooter('Echelon v2.0')
+                        response.setFooter('Echelon v1.1')
                         response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                         msg.channel.send(response)
                     } catch (err) {
@@ -65,7 +65,7 @@ async function remind(msg = new discord.Message, mongo = new MongoClient, comman
                     var response = new discord.MessageEmbed();
                     response.setTitle('Invalid time!')
                     response.setDescription(`Acceptable time inputs include \`12:00:00 PM\``)
-                    response.setFooter('Echelon v2.0')
+                    response.setFooter('Echelon v1.1')
                     response.setColor(16711680)
                     msg.channel.send(response)
                 }
@@ -73,7 +73,7 @@ async function remind(msg = new discord.Message, mongo = new MongoClient, comman
                 var response = new discord.MessageEmbed();
                 response.setTitle('Missing parameters!')
                 response.setDescription(`The proper use of this command is \`${config['prefix']}${commands[content[0]].usage}\``)
-                response.setFooter('Echelon v2.0')
+                response.setFooter('Echelon v1.1')
                 response.setColor(16711680)
                 msg.channel.send(response)
             }
@@ -83,7 +83,7 @@ async function remind(msg = new discord.Message, mongo = new MongoClient, comman
         response.setTitle(`No MongoDB Linked!`)
         response.setDescription(`This command requires MongoDB to work!`)
         response.setColor(16711680)
-        response.setFooter('Echelon v2.0')
+        response.setFooter('Echelon v1.1')
         msg.channel.send(response)
     }
 }
