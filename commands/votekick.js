@@ -15,7 +15,7 @@ async function votekick(msg, mongo, commands, content, config) {
             voteboard.setTitle('Uh Oh! A votekick has been invoked!')
             voteboard.setDescription(`A votekick has been started for <@!${mentions[0].userID}> by <@!${msg.author.id}>!\nYou have \`${config['polltime']} minute(s)\` to enter the polls.\n\nIf you vote for both, your vote will not be counted.`)
             voteboard.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-            voteboard.setFooter('Echelon v2.0')
+            voteboard.setFooter('Echelon v2.5')
             msg.channel.send(`<@${mentions[0].userID}> <@!${msg.author.id}>`, voteboard).then(async message => {
                 if (mongo) {
                     await mongo.db(msg.guild.id).collection('votekick-polls').insertOne({
@@ -73,7 +73,7 @@ async function votekick(msg, mongo, commands, content, config) {
                     embed.addField(`Voted no:`, `\`${no.length}\``, true)
                     embed.addField(`Final verdict:`, `<@${mentions[0].userID}> is ${kick == 'draw' ? "lucky! its a draw!" : kick ? 'getting kicked!' : 'safe! for now...'}`)
                     embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                    embed.setFooter('Echelon v2.0')
+                    embed.setFooter('Echelon v2.5')
                     msg.channel.send(`<@${mentions[0].userID}> <@!${msg.author.id}>`, embed)
                 });
             })
@@ -83,7 +83,7 @@ async function votekick(msg, mongo, commands, content, config) {
         embed.setTitle('Missing parameters!')
         embed.setDescription(`The proper use of this command is \`${config['prefix']}${commands[content[0]].usage || '[n/a]'}\``)
         embed.setColor(16711680)
-        embed.setFooter('Echelon v2.0')
+        embed.setFooter('Echelon v2.5')
         msg.channel.send(embed)
     }
 }

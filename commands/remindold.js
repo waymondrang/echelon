@@ -25,7 +25,7 @@ async function remind(msg, mongo, commands, content, config, client) {
                 var reminders = await results.toArray()
                 var response = new discord.MessageEmbed()
                 response.setTitle("Pending Reminders")
-                response.setFooter('Echelon v2.0')
+                response.setFooter('Echelon v2.5')
                 response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                 reminders.forEach(reminder => {
                     response.addField(`ID: \`${reminder._id.toString().substr(0, 10)}...\``, `**By:** <@!${reminder.author}>\n**Message:** ${reminder.message}\n**Time:** ${new Date(reminder.time).toLocaleTimeString()}`)
@@ -35,7 +35,7 @@ async function remind(msg, mongo, commands, content, config, client) {
                 var response = new discord.MessageEmbed();
                 response.setTitle('Invalid Option!')
                 response.setDescription(`Valid options include ${commands[content[0]].options.map(option => `\`${config['option-prefix']}${option}\``).join(' ')}`)
-                response.setFooter('Echelon v2.0')
+                response.setFooter('Echelon v2.5')
                 response.setColor(16711680)
                 msg.channel.send(response)
             }
@@ -65,7 +65,7 @@ async function remind(msg, mongo, commands, content, config, client) {
                         response.addField(`Message`, `${message}`);
                         response.addField(`Time`, `${remindtime.toLocaleTimeString()}`)
                         response.setDescription(`Users will be automagically mentioned in this channel at the specified time.`)
-                        response.setFooter('Echelon v2.0')
+                        response.setFooter('Echelon v2.5')
                         response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                         msg.channel.send(response)
                     } catch (err) {
@@ -75,7 +75,7 @@ async function remind(msg, mongo, commands, content, config, client) {
                     var response = new discord.MessageEmbed();
                     response.setTitle('Invalid time!')
                     response.setDescription(`Acceptable time inputs include \`12:00:00 PM\``)
-                    response.setFooter('Echelon v2.0')
+                    response.setFooter('Echelon v2.5')
                     response.setColor(16711680)
                     msg.channel.send(response)
                 }
@@ -83,7 +83,7 @@ async function remind(msg, mongo, commands, content, config, client) {
                 var response = new discord.MessageEmbed();
                 response.setTitle('Missing parameters!')
                 response.setDescription(`The proper use of this command is \`${config['prefix']}${commands[content[0]].usage}\``)
-                response.setFooter('Echelon v2.0')
+                response.setFooter('Echelon v2.5')
                 response.setColor(16711680)
                 msg.channel.send(response)
             }
@@ -93,7 +93,7 @@ async function remind(msg, mongo, commands, content, config, client) {
         response.setTitle(`No MongoDB Linked!`)
         response.setDescription(`This command requires MongoDB to work!`)
         response.setColor(16711680)
-        response.setFooter('Echelon v2.0')
+        response.setFooter('Echelon v2.5')
         msg.channel.send(response)
     }
 }

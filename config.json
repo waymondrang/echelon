@@ -3,6 +3,7 @@
     "option-prefix": "--",
     "token": "",
     "riotkey": "",
+    "finnhubtoken": "",
     "geniustoken": "",
     "mongo-uri": "",
     "apextoken": "",

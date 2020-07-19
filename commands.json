@@ -75,6 +75,22 @@
         },
         "usage": "serverstats"
     },
+    "stock": {
+        "description": "The Echelon Brokerage® service is a virtual stock brokerage service using actual, real-time stock market data. Compete with your friends to become the richest (or poorest) stock trader!",
+        "filename": "stock.js",
+        "usage": "stock [buy/sell/quote/portfolio/balance/leaderboard] [symbol] [quantity] --pm --list",
+        "more-info": {
+            "options": "The `pm` option can be used on the all command actions, which allows you to interact with the bot privately through direct messages. The actual command must be first sent in a public channel, however. If the `pm` option is used on either the buy, sell, portfolio, or quote actions, the user's message will be deleted after being sent into a public channel.\n\nThe `list` option can only be used on the portfolio command, which generates a list of all the companies that you own a share in. It can be used in conjunction with the `pm` command.",
+            "get started": "To get started, simply use the `stock register` command to begin.",
+            "shorthand": "`s [b/s/q/p/bl/lb] [symbol] [quantity] --pm --list`",
+            "disclaimer": "You won't actually own any stocks purchased through the Echelon Brokerage® service, of course."
+        }
+    },
+    "s": {
+        "filename": "stock.js",
+        "description": "Shorthand notations for the stock commands.\nLearn more about the `stock` command by typing `help stock`.",
+        "usage": "s [b/s/q/p/bl/lb] [symbol] [quantity] --pm --list"
+    },
     "votekick": {
         "description": "Start a votekick for a member of the server.",
         "filename": "votekick.js",

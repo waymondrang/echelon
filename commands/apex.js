@@ -5,7 +5,7 @@ async function apex(msg, mongo, commands, content, config) {
     if (config['apextoken']) {
         console.log(`${msg.author.username} requested apex stats in ${msg.guild.name}`)
         var embed = new discord.MessageEmbed()
-        embed.setFooter('Echelon v2.0')
+        embed.setFooter('Echelon v2.5')
         if (content[1]) {
             if (commands.apex['more-info']['platforms'].indexOf(content[1].toLowerCase()) !== -1) {
                 var response = await fetch(`https://api.mozambiquehe.re/bridge?version=4&platform=${content[1].toUpperCase()}&player=${content[2]}&auth=${config['apextoken']}`).then(res => res.json())
@@ -43,7 +43,7 @@ async function apex(msg, mongo, commands, content, config) {
         embed.setTitle('No Apex Legends API key found!')
         embed.setDescription(`This command requires a Apex Legends API key to work!\nGet one [here](https://apexlegendsapi.com/)`)
         embed.setColor(16711680)
-        embed.setFooter('Echelon v2.0')
+        embed.setFooter('Echelon v2.5')
         msg.channel.send(embed)
     }
 }
