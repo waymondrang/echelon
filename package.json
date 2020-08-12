@@ -1,17 +1,18 @@
 {
-  "name": "echelon",
-  "version": "2.0.0",
-  "description": "a modular node.js discord bot powered by discord.js and mongodb",
+  "name": "echelon-discord-bot",
+  "version": "2.6.0",
+  "description": "A modular Discord bot powered by Discord.js and MongoDB",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "raymond wang",
+  "license": "MIT",
   "dependencies": {
     "discord.js": "^12.2.0",
     "mongodb": "^3.5.9",
     "node-fetch": "^2.6.0",
     "utf8": "^3.0.0"
-  }
+  },
+  "devDependencies": {}
 }

@@ -31,12 +31,12 @@ async function serverstats(msg, mongo, commands, content, config) {
         reminder.setTitle(`No MongoDB Linked!`)
         reminder.setDescription(`Link a MongoDB to unlock the full potential of this command!`)
         reminder.setColor(16711680)
-        reminder.setFooter('Echelon v2.5')
+        reminder.setFooter('Echelon v2.6')
         msg.channel.send(reminder)
     }
     //response.setDescription(`as of ${(new Date(serverdata.joined)).toLocaleDateString()}`)
     response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-    response.setFooter('Echelon v2.5')
+    response.setFooter('Echelon v2.6')
     msg.channel.send(response)
 
 }

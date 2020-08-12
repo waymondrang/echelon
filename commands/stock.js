@@ -38,7 +38,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var response = new discord.MessageEmbed();
                         response.setTitle('Missing Permissions!');
                         response.setDescription(`Echelon does not have the \`manage messages\` permission, and therefore cannot delete messsages. If you would like to use this feature, please grant Echelon these permissions.`)
-                        response.setFooter('Echelon v2.5');
+                        response.setFooter('Echelon v2.6');
                         response.setColor(16763432)
                         msg.channel.send(response)
                     }
@@ -56,7 +56,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                             response.setTitle('You have been successfully registered!')
                             response.setDescription(`Welcome to Echelon Brokerage®!\n\nAn initial \`$1000\` balance has been deposited into your account. You can check your balance at any time using the command \`${config['prefix']}${content[0]} balance\`.\n\nHappy Trading!`)
                             response.addField('Tips', `Here are some tips that will give you a head start on your trading journey.\n\n**Usage**\nThere are 2 ways to use the stock command. You can type \`${config['prefix']}stock\` or \`${config['prefix']}s\`.\n\n**Options**\nThere are also several options that will make your trading experience more private. You can append the \`${config['option-prefix']}pm\` to the end of the \`buy\` \`sell\` or \`portfolio\` commands to complete the action through private messages. If the \`${config['option-prefix']}pm\` option is used, the user's message will be deleted to keep trading history private. Of course, if you wish to trade openly and let everyone know you're rich enough to afford one Tesla stock, go ahead and exclude the option.`)
-                            response.setFooter('Echelon v2.5')
+                            response.setFooter('Echelon v2.6')
                             response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                             msg.channel.send(response)
                             return
@@ -68,7 +68,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var response = new discord.MessageEmbed();
                         response.setTitle('You are already registered!')
                         response.setDescription(`You seem to be already registered with Echelon Brokerage®.\n\nIf you believe this is incorrect, contact a server admin or refer to the Github Documentation.`)
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(16711680)
                         msg.channel.send(response)
                         return
@@ -78,7 +78,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         "balance": -1
                     }).limit(10)).toArray());
                     var response = new discord.MessageEmbed();
-                    response.setFooter('Echelon v2.5')
+                    response.setFooter('Echelon v2.6')
                     response.setTitle(`Wealthiest Traders`)
                     response.setDescription(`Trader anonymity is observed, and only their balances are shown.`)
                     for (var i = 0; i < leaderboard.length; i++) {
@@ -94,16 +94,17 @@ async function stock(msg, mongo, commands, content, config, client) {
                         if (content[2]) {
                             if (content[3]) {
                                 if (isInt(content[3])) {
+                                    var quantity = parseInt(content[3])
                                     var symbol = content[2].replace(/[^a-z0-9]+/gm, '').toUpperCase()
                                     var result = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${config['finnhubtoken']}`).then(response => response.json()).catch(error => console.log(error))
                                     if (!result.error) {
-                                        var cost = Math.ceil((parseFloat(result.c) * parseInt(content[3])) * 100) / 100
+                                        var cost = Math.ceil((parseFloat(result.c) * quantity) * 100) / 100
                                         console.log(cost)
                                         if (user.balance < cost) {
                                             var response = new discord.MessageEmbed();
                                             response.setTitle('Insufficient Balance!')
                                             response.setDescription(`You do not have enough money!\n\n**Cost**\n\`${content[3]}\` share(s) of \`${symbol}\` would cost \`$${cost}\`\n\nIf you would like to check your balance, use the \`${config['prefix']}${content[0]} balance\` command.`)
-                                            response.setFooter('Echelon v2.5')
+                                            response.setFooter('Echelon v2.6')
                                             response.setColor(16711680)
                                             if (msg.content.includes('--pm')) {
                                                 client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -115,7 +116,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                             var response = new discord.MessageEmbed();
                                             response.setTitle('Purchase Confirmation')
                                             response.setDescription(`You are about to purchase \`${content[3]}\` share(s) of \`${symbol}\` for \`$${cost}\`\n\nPlease respond \`yes\` or \`no\` within the next **30 seconds** to confirm this purchase.`)
-                                            response.setFooter('Echelon v2.5')
+                                            response.setFooter('Echelon v2.6')
                                             response.setColor(16763432)
                                             if (msg.content.includes('--pm')) {
                                                 var message = await client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -130,17 +131,23 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                     var response = new discord.MessageEmbed();
                                                     response.setTitle('Processing Transaction')
                                                     response.setDescription(`Please do not close the tab or pour the milk before the cereal.`)
-                                                    response.setFooter('Echelon v2.5')
+                                                    response.setFooter('Echelon v2.6')
                                                     response.setColor(16763432)
                                                     var pendingmessage = await message.channel.send(response)
                                                     try {
+                                                        var symbolprofile = await mongo.db('stock').collection(symbol).findOne({
+                                                            _id: msg.author.id
+                                                        })
+                                                        var profileaverage = symbolprofile ? symbolprofile.averagecost : 0
+                                                        var profilecurrent = symbolprofile ? symbolprofile.current : 0
+                                                        var averagecost = Math.ceil((((profileaverage * profilecurrent) + cost) / (profilecurrent + quantity)) * 100) / 100
                                                         var newbalance = Math.ceil((user.balance - cost) * 100) / 100
                                                         await mongo.db('stock').collection('index').updateOne({
                                                             _id: msg.author.id
                                                         }, {
                                                             $inc: {
-                                                                current: parseInt(content[3]),
-                                                                bought: parseInt(content[3]),
+                                                                current: quantity,
+                                                                bought: quantity,
                                                             },
                                                             $set: {
                                                                 balance: newbalance
@@ -152,16 +159,20 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                             _id: msg.author.id
                                                         }, {
                                                             $inc: {
-                                                                current: parseInt(content[3]),
-                                                                bought: parseInt(content[3])
+                                                                current: quantity,
+                                                                bought: quantity,
+                                                                totalspent: cost,
+                                                            },
+                                                            $set: {
+                                                                averagecost: averagecost
                                                             }
                                                         }, {
                                                             upsert: true
                                                         })
                                                         var response = new discord.MessageEmbed();
                                                         response.setTitle('Purchase Successful!')
-                                                        response.setDescription(`You have successfully purchased \`${content[3]}\` share(s) of \`${symbol}\` for \`$${cost}\`.\n\nNext time, if you wish to purchase privately, you may append the \`${config['option-prefix']}pm\` to the end of the command.\n\nYou can check the price of \`${symbol}\` at anytime using the \`${config['prefix']}${content[0]} quote ${symbol}\` command.\n\nThank you for trading with Echelon Brokerage®!`)
-                                                        response.setFooter('Echelon v2.5')
+                                                        response.setDescription(`You have successfully purchased \`${quantity}\` share(s) of \`${symbol}\` for \`$${cost}\`.\n\nNext time, if you wish to purchase privately, you may append the \`${config['option-prefix']}pm\` to the end of the command.\n\nYou can check the price of \`${symbol}\` at anytime using the \`${config['prefix']}${content[0]} quote ${symbol}\` command.\n\nThank you for trading with Echelon Brokerage®!`)
+                                                        response.setFooter('Echelon v2.6')
                                                         response.setColor(9159498)
                                                         message.channel.send(response)
                                                         pendingmessage.delete()
@@ -170,7 +181,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                         var response = new discord.MessageEmbed();
                                                         response.setTitle('Purchase Error')
                                                         response.setDescription(`Something went wrong with your transaction, please try again.\n\nIf this problem persists, contact a server admin or refer to the Github Documentation.`)
-                                                        response.setFooter('Echelon v2.5')
+                                                        response.setFooter('Echelon v2.6')
                                                         response.setColor(16711680)
                                                         message.channel.send(response)
                                                         pendingmessage.delete()
@@ -180,7 +191,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                     var response = new discord.MessageEmbed();
                                                     response.setTitle('Purchase Cancelled')
                                                     response.setDescription(`No money was charged from your account.`)
-                                                    response.setFooter('Echelon v2.5')
+                                                    response.setFooter('Echelon v2.6')
                                                     response.setColor(16711680)
                                                     message.channel.send(response)
                                                     return
@@ -192,7 +203,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                     var response = new discord.MessageEmbed();
                                                     response.setTitle('Confirmation Timed-Out!')
                                                     response.setDescription(`You did not confirm your purchase for \`${content[3]}\` share(s) of \`${symbol}\`!\n\nNo money was charged from your account.`)
-                                                    response.setFooter('Echelon v2.5')
+                                                    response.setFooter('Echelon v2.6')
                                                     response.setColor(16711680)
                                                     message.channel.send(response)
                                                     return
@@ -203,7 +214,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                         var response = new discord.MessageEmbed();
                                         response.setTitle('Symbol Does Not Exist!')
                                         response.setDescription(`That ticker symbol could not be found!\nPlease check and try again.`)
-                                        response.setFooter('Echelon v2.5')
+                                        response.setFooter('Echelon v2.6')
                                         response.setColor(16711680)
                                         if (msg.content.includes('--pm')) {
                                             client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -216,7 +227,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                     var response = new discord.MessageEmbed();
                                     response.setTitle('Quantity must be a number!')
                                     response.setDescription(`Please refer to the command usage: \`${config['prefix']}${content[0]} buy [ticker symbol] [quantity]\``)
-                                    response.setFooter('Echelon v2.5')
+                                    response.setFooter('Echelon v2.6')
                                     response.setColor(16711680)
                                     if (msg.content.includes('--pm')) {
                                         client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -229,7 +240,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                 var response = new discord.MessageEmbed();
                                 response.setTitle('Missing Parameters!')
                                 response.setDescription(`A quantity must be specified!\n\nThe proper use of the quote action is \`${config['prefix']}${content[0]} buy [ticker symbol] [quantity]\``)
-                                response.setFooter('Echelon v2.5')
+                                response.setFooter('Echelon v2.6')
                                 response.setColor(16711680)
                                 if (msg.content.includes('--pm')) {
                                     client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -242,7 +253,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                             var response = new discord.MessageEmbed();
                             response.setTitle('Missing Parameters!')
                             response.setDescription(`A ticker symbol is required!\n\nThe proper use of the quote action is \`${config['prefix']}${content[0]} buy [ticker symbol] [quantity]\``)
-                            response.setFooter('Echelon v2.5')
+                            response.setFooter('Echelon v2.6')
                             response.setColor(16711680)
                             if (msg.content.includes('--pm')) {
                                 client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -255,7 +266,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var response = new discord.MessageEmbed();
                         response.setTitle('User not registered!')
                         response.setDescription(`To use this command, you must be registered with Echelon Brokerage®.\n\n**Registration**\nTo register, simply type \`${config['prefix']}${content[0]} register\`. Upon successful registration, you will recieve a \`$1000\` balance.\n\nSo, what are you waiting for?`)
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(16711680)
                         msg.channel.send(response)
                         return
@@ -272,7 +283,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                             for (collection of collections) {
                                 if (collection.name !== 'index') {
                                     var result = await mongo.db('stock').collection(collection.name).findOne({
-                                        _id: msg.author.id
+                                        _id: msg.author.id, current: { $gte: 1 }
                                     }).catch(error => console.log(error))
                                     if (result) {
                                         result.name = collection.name
@@ -281,7 +292,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                 }
                             }
                             for (share of shares) {
-                                response.addField(`${share.name}`, `\`${share.current || 0} shares\``, true)
+                                response.addField(`${share.name}`, `\`${share.current || 0} shares\`\n\`${share.averagecost ? `$${share.averagecost}` : '[n/a]'} avg\``, true)
                             }
                             response.setDescription(`Below is a list of all of the companies that you currently own shares for.\n\nIf you wish to view this list through private messages, append the \`${config['option-prefix']}pm\` option to your command.`)
                         } else {
@@ -290,7 +301,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                             response.addField(`Total Shares Sold`, `\`${user.sold || 0}\``, true)
                             response.addField(`Total Shares Bought`, `\`${user.bought || 0}\``, true)
                         }
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                         if (msg.content.includes(`${config['option-prefix']}pm`)) {
                             response.setTitle(`Your Trading Portfolio`)
@@ -304,7 +315,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var response = new discord.MessageEmbed();
                         response.setTitle('User not registered!')
                         response.setDescription(`To use this command, you must be registered with Echelon Brokerage®.\n\n**Registration**\nTo register, simply type \`${config['prefix']}${content[0]} register\`. Upon successful registration, you will recieve a \`$1000\` balance.\n\nSo, what are you waiting for?`)
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(16711680)
                         msg.channel.send(response)
                         return
@@ -331,7 +342,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                 var response = new discord.MessageEmbed();
                                                 response.setTitle('Sale Confirmation')
                                                 response.setDescription(`You are about to sell \`${content[3]}\` share(s) of \`${symbol}\` for \`$${salevalue}\`\n\nPlease respond \`yes\` or \`no\` within the next **30 seconds** to confirm this sale.`)
-                                                response.setFooter('Echelon v2.5')
+                                                response.setFooter('Echelon v2.6')
                                                 response.setColor(16763432)
                                                 if (msg.content.includes('--pm')) {
                                                     var message = await client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -346,7 +357,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                         var response = new discord.MessageEmbed();
                                                         response.setTitle('Processing Transaction')
                                                         response.setDescription(`Please do not close the tab or pour the milk before the cereal.`)
-                                                        response.setFooter('Echelon v2.5')
+                                                        response.setFooter('Echelon v2.6')
                                                         response.setColor(16763432)
                                                         var pendingmessage = await message.channel.send(response)
                                                         try {
@@ -377,7 +388,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                             var response = new discord.MessageEmbed();
                                                             response.setTitle('Sale Successful!')
                                                             response.setDescription(`You have successfully sold \`${content[3]}\` share(s) of \`${symbol}\` for \`$${salevalue}\`.\n\nNext time, if you would like to sell and buy in private, you can append the \`${config['option-prefix']}pm\` option to you command, and Echelon will respond via private channel.\n\nYou may check your balance at anytime using the \`${config['prefix']}${content[0]} balance\` command.\n\nThank you for trading with Echelon Brokerage®!`)
-                                                            response.setFooter('Echelon v2.5')
+                                                            response.setFooter('Echelon v2.6')
                                                             response.setColor(9159498)
                                                             message.channel.send(response)
                                                             pendingmessage.delete()
@@ -386,7 +397,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                             var response = new discord.MessageEmbed();
                                                             response.setTitle('Sale Error')
                                                             response.setDescription(`Something went wrong with your transaction, please try again.\n\nIf this problem persists, contact a server admin or refer to the Github Documentation.`)
-                                                            response.setFooter('Echelon v2.5')
+                                                            response.setFooter('Echelon v2.6')
                                                             response.setColor(16711680)
                                                             message.channel.send(response)
                                                             pendingmessage.delete()
@@ -396,7 +407,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                         var response = new discord.MessageEmbed();
                                                         response.setTitle('Sale Cancelled')
                                                         response.setDescription(`Don't worry, I'll act like this never happened.`)
-                                                        response.setFooter('Echelon v2.5')
+                                                        response.setFooter('Echelon v2.6')
                                                         response.setColor(16711680)
                                                         var cancelled = await message.channel.send(response)
                                                         return
@@ -408,7 +419,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                         var response = new discord.MessageEmbed();
                                                         response.setTitle('Confirmation Timed-Out!')
                                                         response.setDescription(`You did not confirm your purchase for \`${content[3]}\` share(s) of \`${symbol}\`!\n\nNo money was charged from your account.`)
-                                                        response.setFooter('Echelon v2.5')
+                                                        response.setFooter('Echelon v2.6')
                                                         response.setColor(16711680)
                                                         message.channel.send(response)
                                                         return
@@ -418,7 +429,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                                 var response = new discord.MessageEmbed();
                                                 response.setTitle('Not Allowed!')
                                                 response.setDescription(`You cannot sell more shares than you own! Please adjust the quantity and try again.`)
-                                                response.setFooter('Echelon v2.5')
+                                                response.setFooter('Echelon v2.6')
                                                 response.setColor(16711680)
                                                 if (msg.content.includes('--pm')) {
                                                     client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -431,7 +442,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                             var response = new discord.MessageEmbed();
                                             response.setTitle('Not Allowed!')
                                             response.setDescription(`You do not own any shares for \`${symbol}\`\n\nIf you wish to purchase \`${symbol}\` shares, use \`${config['prefix']}${content[0]} buy ${symbol} [quantity]\``)
-                                            response.setFooter('Echelon v2.5')
+                                            response.setFooter('Echelon v2.6')
                                             response.setColor(16711680)
                                             if (msg.content.includes('--pm')) {
                                                 client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -444,7 +455,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                         var response = new discord.MessageEmbed();
                                         response.setTitle('Symbol Does Not Exist!')
                                         response.setDescription(`That ticker symbol could not be found!\nPlease check and try again.`)
-                                        response.setFooter('Echelon v2.5')
+                                        response.setFooter('Echelon v2.6')
                                         response.setColor(16711680)
                                         if (msg.content.includes('--pm')) {
                                             client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -457,7 +468,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                     var response = new discord.MessageEmbed();
                                     response.setTitle('Quantity must be a number!')
                                     response.setDescription(`Please refer to the command usage: \`${config['prefix']}${content[0]} buy [ticker symbol] [quantity]\``)
-                                    response.setFooter('Echelon v2.5')
+                                    response.setFooter('Echelon v2.6')
                                     response.setColor(16711680)
                                     if (msg.content.includes('--pm')) {
                                         client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -470,7 +481,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                                 var response = new discord.MessageEmbed();
                                 response.setTitle('Missing Parameters!')
                                 response.setDescription(`A quantity must be specified!\n\nThe proper use of the quote action is \`${config['prefix']}${content[0]} buy [ticker symbol] [quantity]\``)
-                                response.setFooter('Echelon v2.5')
+                                response.setFooter('Echelon v2.6')
                                 response.setColor(16711680)
                                 if (msg.content.includes('--pm')) {
                                     client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -483,7 +494,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                             var response = new discord.MessageEmbed();
                             response.setTitle('Missing Parameters!')
                             response.setDescription(`A ticker symbol is required!\n\nThe proper use of the quote action is \`${config['prefix']}${content[0]} buy [ticker symbol] [quantity]\``)
-                            response.setFooter('Echelon v2.5')
+                            response.setFooter('Echelon v2.6')
                             response.setColor(16711680)
                             if (msg.content.includes('--pm')) {
                                 client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -496,7 +507,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var response = new discord.MessageEmbed();
                         response.setTitle('User not registered!')
                         response.setDescription(`To use this command, you must be registered with Echelon Brokerage®.\n\n**Registration**\nTo register, simply type \`${config['prefix']}${content[0]} register\`. Upon successful registration, you will recieve a \`$1000\` balance.\n\nSo, what are you waiting for?`)
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(16711680)
                         msg.channel.send(response)
                         return
@@ -508,7 +519,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                     if (user) {
                         var response = new discord.MessageEmbed();
                         response.addField(`Balance`, `${user.balance ? `\`$${user.balance}\`` : '[n/a]'}`)
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                         if (msg.content.includes(`${config['option-prefix']}`)) {
                             response.setTitle('Your Balance')
@@ -524,7 +535,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var response = new discord.MessageEmbed();
                         response.setTitle('User not registered!')
                         response.setDescription(`To use this command, you must be registered with Echelon Brokerage®.\n\n**Registration**\nTo register, simply type \`${config['prefix']}${content[0]} register\`. Upon successful registration, you will recieve a \`$1000\` balance.\n\nSo, what are you waiting for?`)
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(16711680)
                         msg.channel.send(response)
                         return
@@ -535,6 +546,9 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var result = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${config['finnhubtoken']}`).then(response => response.json()).catch(error => console.log(error))
                         if (result) {
                             if (!result.error) {
+                                var stockowned = await mongo.db('stock').collection(symbol).findOne({
+                                    _id: msg.author.id, current: { $gte: 1 }
+                                })
                                 var response = new discord.MessageEmbed();
                                 response.setTitle(`Latest Quote for \`${symbol}\``)
                                 response.setDescription(`Real-time stock market data provided by [finnhub.io](https://finnhub.io/).`)
@@ -543,19 +557,27 @@ async function stock(msg, mongo, commands, content, config, client) {
                                 response.addField(`Day Low`, `${result.l ? `\`$${result.l}\`` : '[n/a]'}`, true)
                                 response.addField(`Day Open`, `${result.o ? `\`$${result.o}\`` : '[n/a]'}`, true)
                                 response.addField(`Previous Close`, `${result.pc ? `\`$${result.pc}\`` : '[n/a]'}`, true)
-                                response.setFooter('Echelon v2.5')
+                                if (stockowned) {
+                                    var additionalmessage = new discord.MessageEmbed()
+                                    additionalmessage.setTitle(`You have shares in this stock!`)
+                                    additionalmessage.setDescription(`Remember, to view your portfolio, use the \`stock portfolio\` or \`s p\` command! There, you will be able to view all of your stocks and view prices.`)
+                                    additionalmessage.setFooter('Echelon v2.6')
+                                    additionalmessage.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
+                                }
+                                response.setFooter('Echelon v2.6')
                                 response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                                 if (msg.content.includes('--pm')) {
                                     client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
                                 } else {
                                     msg.channel.send(response)
+                                    additionalmessage ? msg.channel.send(additionalmessage) : false;
                                 }
                                 return
                             } else {
                                 var response = new discord.MessageEmbed();
                                 response.setTitle('Symbol Does Not Exist!')
                                 response.setDescription(`That ticker symbol could not be found!\nPlease check and try again.`)
-                                response.setFooter('Echelon v2.5')
+                                response.setFooter('Echelon v2.6')
                                 response.setColor(16711680)
                                 if (msg.content.includes('--pm')) {
                                     client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -569,7 +591,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                         var response = new discord.MessageEmbed();
                         response.setTitle('Missing Parameters!')
                         response.setDescription(`A ticker symbol is required!\n\nThe proper use of the quote action is \`${config['prefix']}${content[0]} quote [ticker symbol]\``)
-                        response.setFooter('Echelon v2.5')
+                        response.setFooter('Echelon v2.6')
                         response.setColor(16711680)
                         if (msg.content.includes('--pm')) {
                             client.users.cache.get(msg.author.id).send(`Sent via private message, as per request.`, response);
@@ -582,7 +604,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                     var response = new discord.MessageEmbed();
                     response.setTitle('Invalid Action!')
                     response.setDescription(`Valid actions include \`${actions.join('\` \`')}\``)
-                    response.setFooter('Echelon v2.5')
+                    response.setFooter('Echelon v2.6')
                     response.setColor(16711680)
                     msg.channel.send(response)
                     return;
@@ -592,7 +614,7 @@ async function stock(msg, mongo, commands, content, config, client) {
                 var response = new discord.MessageEmbed();
                 response.setTitle('Missing Parameters!')
                 response.setDescription(`The proper use of this command is \`${config['prefix']}${commands[content[0]].usage}\``)
-                response.setFooter('Echelon v2.5')
+                response.setFooter('Echelon v2.6')
                 response.setColor(16711680)
                 msg.channel.send(response)
                 return
@@ -602,7 +624,7 @@ async function stock(msg, mongo, commands, content, config, client) {
             embed.setTitle('No Finnhub API key found!')
             embed.setDescription(`This command requires a Finnhub API key to work!\nGet one [here](https://finnhub.io/)`)
             embed.setColor(16711680)
-            embed.setFooter('Echelon v2.5')
+            embed.setFooter('Echelon v2.6')
             msg.channel.send(embed)
         }
     } else {
@@ -610,7 +632,7 @@ async function stock(msg, mongo, commands, content, config, client) {
         reminder.setTitle(`No MongoDB Linked!`)
         reminder.setDescription(`This command requres a MongoDB database to work!`)
         reminder.setColor(16711680)
-        reminder.setFooter('Echelon v2.5')
+        reminder.setFooter('Echelon v2.6')
         msg.channel.send(reminder)
     }
 }

@@ -13,7 +13,7 @@ async function lol(msg, mongo, commands, content, config) {
                 var rankedstats = await fetch(`https://na1.api.riotgames.com/lol/league/v4/entries/by-summoner/${result.id}?api_key=${config['riotkey']}`).then(res => res.json())
                 var version = await fetch(`https://ddragon.leagueoflegends.com/api/versions.json`).then(res => res.json())
                 var embed = new discord.MessageEmbed()
-                embed.setFooter('Echelon v2.5')
+                embed.setFooter('Echelon v2.6')
                 embed.setTitle(`\`${result.name || `[n/a]`}\` League of Legends Stats`)
                 embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                 embed.setDescription('Provided by [riot games api](https://developer.riotgames.com/)')
@@ -41,7 +41,7 @@ async function lol(msg, mongo, commands, content, config) {
             embed.setTitle('Missing parameters!')
             embed.setDescription(`The proper use of this command is \`${config['prefix']}${commands[content[0]].usage || '[n/a]'}\``)
             embed.setColor(16711680)
-            embed.setFooter('Echelon v2.5')
+            embed.setFooter('Echelon v2.6')
             msg.channel.send(embed)
         }
     } else {
@@ -49,7 +49,7 @@ async function lol(msg, mongo, commands, content, config) {
         embed.setTitle('No Riot API key found!')
         embed.setDescription(`This command requires a Riot API key to work!\nGet one [here](https://developer.riotgames.com/)`)
         embed.setColor(16711680)
-        embed.setFooter('Echelon v2.5')
+        embed.setFooter('Echelon v2.6')
         msg.channel.send(embed)
     }
 }

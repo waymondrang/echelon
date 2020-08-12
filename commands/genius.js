@@ -15,7 +15,7 @@ async function genius(msg, mongo, commands, content, config) {
                 var embed = new discord.MessageEmbed()
                 embed.setTitle(`Search results for \`${utf8query}\``)
                 embed.setDescription('Provided by [Genius](https://genius.com/) API')
-                embed.setFooter('Echelon v2.5')
+                embed.setFooter('Echelon v2.6')
                 embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                 var resultcount = lyrics.response.hits.length < 5 ? lyrics.response.hits.length : 5
                 for (var i = 0; i < resultcount; i++) {
@@ -47,7 +47,7 @@ async function genius(msg, mongo, commands, content, config) {
                 response.setTitle('No results found!')
                 response.setDescription(`Please check your query and try again.`)
                 response.setColor(16711680)
-                response.setFooter('Echelon v2.5')
+                response.setFooter('Echelon v2.6')
                 msg.channel.send(response)
             }
         } else {
@@ -55,7 +55,7 @@ async function genius(msg, mongo, commands, content, config) {
             response.setTitle('Missing parameters!')
             response.setDescription(`The proper use of this command is \`${config['prefix']}${commands[content[0]].usage || '[n/a]'}\``)
             response.setColor(16711680)
-            response.setFooter('Echelon v2.5')
+            response.setFooter('Echelon v2.6')
             msg.channel.send(response)
         }
     } else {
@@ -63,7 +63,7 @@ async function genius(msg, mongo, commands, content, config) {
         response.setTitle(`No Genius API token found!`)
         response.setDescription(`This command requires a Genius API token to work!\nGet one [here](https://docs.genius.com/#/songs-h2)`)
         response.setColor(16711680)
-        response.setFooter('Echelon v2.5')
+        response.setFooter('Echelon v2.6')
         msg.channel.send(response)
     }
 }
