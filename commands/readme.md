@@ -1,4 +1,4 @@
-# Echelon at your Command
+# Echelon at your Command!
 
 Echelon has many useful and fun commands! Here's what they do and how to use them. All of the commands will be in `this` syntax. Remember to type the bot's prefix before the command in Discord!
 
