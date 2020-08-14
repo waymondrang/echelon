@@ -16,7 +16,7 @@ async function lol(msg, mongo, commands, content, config) {
                 embed.setFooter('Echelon v2.6')
                 embed.setTitle(`\`${result.name || `[n/a]`}\` League of Legends Stats`)
                 embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                embed.setDescription('Provided by [riot games api](https://developer.riotgames.com/)')
+                embed.setDescription('Provided by [Riot Games API](https://developer.riotgames.com/)')
                 embed.addField(`Summoner level:`, `\`${result.summonerLevel || `[n/a]`}\``, true)
                 if (rankedstats.length) {
                     embed.addField(`Ranked stats:`, `\`${rankedstats[0].tier} ${rankedstats[0].rank}\`\n**${rankedstats[0].wins}** wins / **${rankedstats[0].losses}** losses`)
