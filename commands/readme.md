@@ -146,7 +146,7 @@ A MongoDB database is required to use this command.
 
 # `Stock`
 
-The `stock` command is the most complex and newest command in Echelon. Using real time stock data and MongoDB, users can trade stocks and watch their investments grow (hopefully).
+The `stock` command is the most complex and newest command in Echelon. Using real time stock data and MongoDB, users can trade stocks and compete with their friends to become the richest (or poorest) stock trader!
 
 ## Requirements
 
