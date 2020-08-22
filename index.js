@@ -1,11 +1,8 @@
 const discord = require("discord.js");
-const commands = require('./commands.json')
+const commands = require('./commands.json');
 const config = require("./config.json");
-const client = new discord.Client()
-const dotenv = require('dotenv')
-dotenv.config();
+const client = new discord.Client();
 const MongoClient = require('mongodb').MongoClient;
-const uri = process.env.MONGO_URI;
 const {
     banned,
     special
