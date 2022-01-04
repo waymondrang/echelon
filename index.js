@@ -7,7 +7,7 @@ const {
     banned,
     special
 } = require('./banned-words.json')
-const mastereg = new RegExp((banned.map(word => word.split('').map(letter => letter + '+').join('\\s*'))).concat(special).join("|"));
+const mastereg = !banned.length && !special.length ? null : new RegExp((banned.map(word => word.split('').map(letter => letter + '+').join('\\s*'))).concat(special).join("|"));
 
 if (config['mongo-uri']) {
     var mongo = new MongoClient(config['mongo-uri'], {
@@ -120,16 +120,18 @@ client.on('message', async msg => {
                 }, {
                     upsert: true
                 })
-                if (mastereg.test(msg.content.toLowerCase())) {
-                    console.log(`${msg.author.username} said a bad word in ${msg.guild.name}!`)
-                    msg.react('⚠️');
-                    await mongo.db(msg.guild.id).collection('user-data').updateOne({
-                        _id: msg.member.id
-                    }, {
-                        $inc: {
-                            "bad-words": 1
-                        }
-                    })
+                if (mastereg) {
+                    if (mastereg.test(msg.content.toLowerCase())) {
+                        console.log(`${msg.author.username} said a bad word in ${msg.guild.name}!`)
+                        msg.react('⚠️');
+                        await mongo.db(msg.guild.id).collection('user-data').updateOne({
+                            _id: msg.member.id
+                        }, {
+                            $inc: {
+                                "bad-words": 1
+                            }
+                        })
+                    }
                 }
             }
             if (msg.content.toString().startsWith(config['prefix'])) {
