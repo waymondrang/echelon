@@ -7,7 +7,7 @@ const {
     banned,
     special
 } = require('./banned-words.json')
-const mastereg = !banned.length && !special.length ? null : new RegExp((banned.map(word => word.split('').map(letter => letter + '+').join('\\s*'))).concat(special).join("|"));
+const bad_word_regex = !banned.length && !special.length ? null : new RegExp((banned.map(word => word.split('').map(letter => letter + '+').join('\\s*'))).concat(special).join("|"));
 
 if (config['mongo-uri']) {
     var mongo = new MongoClient(config['mongo-uri'], {
@@ -37,7 +37,7 @@ async function notify(mongo, client) {
                     response.addField(`Created By`, `<@!${reminder.author}>`);
                     response.addField(`Time`, `${new Date(reminder.time).toLocaleTimeString()}`);
                     response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                    response.setFooter('Echelon v2.6')
+                    response.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
                     reminder.mentions.forEach(mention => {
                         client.users.cache.get(mention).send(response);
                     })
@@ -49,7 +49,7 @@ async function notify(mongo, client) {
                     response.addField(`Created By`, `<@!${reminder.author}>`);
                     response.addField(`Time`, `${new Date(reminder.time).toLocaleTimeString()}`);
                     response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                    response.setFooter('Echelon v2.6')
+                    response.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
                     client.channels.cache.get(reminder.channel).send(`${reminder.mentions.map(mention => `<@!${mention}>`).join(' ')}`, response)
                 }
                 await mongo.db('remind').collection('index').updateOne({
@@ -94,65 +94,53 @@ client.once('ready', async () => {
     }
 })
 
+// * v2 COMMAND PROTOCOL
+var V2_COMMANDS = {};
+var N_PATH = require("path").join(__dirname, "commands");
+
+require("fs").readdirSync(N_PATH).forEach(function (FILE) {
+    if (FILE.includes("prototype")) {
+        var V2_COMMAND = new (require("./commands/" + FILE))();
+        V2_COMMANDS[V2_COMMAND.alias] = V2_COMMAND;
+    }
+});
+
 var helpmessage = new discord.MessageEmbed()
 helpmessage.setTitle('`available commands:`');
 helpmessage.setDescription(`\`[brackets]\` can be used to surround a parameter that contains more than one word\neg. \`${config['prefix']}example [echelon bot] [is the best]\``)
-helpmessage.setFooter('Echelon v2.6');
+helpmessage.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
 for (command in commands) {
     helpmessage.addField(`${command}`, `\`${config['prefix']}${commands[command]['usage']}\``, true)
 }
-console.log('help message generated!')
+for (command in V2_COMMANDS) {
+    helpmessage.addField(`${command.alias}`, `\`${config['prefix']}${command.description}\``, true)
+}
+console.log('help message generated!');
+
 
 client.on('message', async msg => {
     if (msg.author.id !== client.user.id) {
         if (msg.channel.type == 'text') {
-            if (config['mongo-uri']) {
-                await mongo.db(msg.guild.id).collection('user-data').updateOne({
-                    _id: msg.author.id
-                }, {
-                    $inc: {
-                        "messages-sent": 1
-                    },
-                    $set: {
-                        displayName: msg.member.displayName,
-                        username: msg.member.user.username
-                    }
-                }, {
-                    upsert: true
-                })
-                if (mastereg) {
-                    if (mastereg.test(msg.content.toLowerCase())) {
-                        console.log(`${msg.author.username} said a bad word in ${msg.guild.name}!`)
-                        msg.react('⚠️');
-                        await mongo.db(msg.guild.id).collection('user-data').updateOne({
-                            _id: msg.member.id
-                        }, {
-                            $inc: {
-                                "bad-words": 1
-                            }
-                        })
-                    }
-                }
+            //if connected to mongo, increment messages count
+            if (config['mongo-uri']) await mongo.db(msg.guild.id).collection('user-data').updateOne({ _id: msg.author.id }, { $inc: { "messages-sent": 1 }, $set: { displayName: msg.member.displayName, username: msg.member.user.username } }, { upsert: true });
+            if (bad_word_regex && bad_word_regex.test(msg.content.toLowerCase())) {
+                console.log(`${msg.author.username} said a bad word in ${msg.guild.name}!`);
+                msg.react('⚠️');
+                // if connected to mongo, increment bad word count
+                if (config['mongo-uri']) await mongo.db(msg.guild.id).collection('user-data').updateOne({ _id: msg.member.id }, { $inc: { "bad-words": 1 } });
             }
             if (msg.content.toString().startsWith(config['prefix'])) {
-                if (config['mongo-uri']) {
-                    await mongo.db(msg.guild.id).collection('user-data').updateOne({
-                        _id: msg.member.id
-                    }, {
-                        $inc: {
-                            "invoked-bot": 1
-                        }
-                    })
-                }
-                var content = msg.content.toString().toLowerCase().replace(/  +/g, ' ').match(/\".*?\"|\'.*?\'|\[.*?\]|\S+/gm).map(each => each.replace(/[\[\]\"\']/gm, '').trim())
-                content[0] = content[0].replace(config['prefix'], '')
-                console.log(content)
+                // if connected to mongo, increment bot usage count
+                if (config['mongo-uri']) await mongo.db(msg.guild.id).collection('user-data').updateOne({ _id: msg.member.id }, { $inc: { "invoked-bot": 1 } });
+                var content = msg.content.toString().toLowerCase().replace(/  +/g, ' ').match(/\".*?\"|\'.*?\'|\[.*?\]|\S+/gm).map(each => each.replace(/[\[\]\"\']/gm, '').trim());
+                content[0] = content[0].replace(config['prefix'], "");
+                // ! console.log(content)
                 if (content[0] == `help`) {
                     console.log(`${msg.author.username} requested for help in ${msg.guild.name}`)
                     if (content[1]) {
                         if (commands[content[1]]) {
                             var help = new discord.MessageEmbed()
-                            help.setFooter('Echelon v2.6')
+                            help.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
                             help.setTitle(`\`${config['prefix']}${content[1]}\``)
                             help.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
                             help.setDescription(commands[content[1]]['description'])
@@ -160,6 +148,14 @@ client.on('message', async msg => {
                             for (field in commands[content[1]]['more-info']) {
                                 help.addField(`${field}`, `${commands[content[1]]['more-info'][field]}`)
                             }
+                            msg.channel.send(help)
+                        } else if (V2_COMMANDS[content[1]]) {
+                            var help = new discord.MessageEmbed()
+                            help.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
+                            help.setTitle(`\`${config['prefix']}${content[1]}\``)
+                            help.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
+                            help.setDescription(V2_COMMANDS[content[1]].description ? V2_COMMANDS[content[1]].description : "\'no description provided\'")
+                            help.addField(`usage`, `\`${V2_COMMANDS[content[1]].usage ? `${config['prefix']}${V2_COMMANDS[content[1]].usage}` : "no usage provided"}\``)
                             msg.channel.send(help)
                         } else {
                             msg.channel.send(`that command does not exist! use \`${config['prefix']}help\` to be enlightened`)
@@ -179,6 +175,8 @@ client.on('message', async msg => {
                         console.error('something went wrong! (most likey command does not path property in json file)')
                         console.log(err)
                     }
+                } else if (V2_COMMANDS[content[0]]) {
+                    V2_COMMANDS[content[0]].main({ message: msg, client: client, config: config });
                 } else {
                     msg.channel.send(`that command does not exist! use \`${config['prefix']}help\` to be enlightened`)
                 }

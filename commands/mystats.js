@@ -15,13 +15,13 @@ async function mystats(msg, mongo, commands, content, config) {
         response.addField('Bad words typed:', `\`${result['bad-words'] || 0} word(s)\``)
         response.addField('Commands used:', `\`${result['invoked-bot'] || 0} command(s)\``)
         response.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-        response.setFooter('Echelon v2.6')
+        response.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
         msg.channel.send(response)
     } else if (!mongo) {
         response.setTitle(`No MongoDB Linked!`)
         response.setDescription(`This command requires MongoDB to work!`)
         response.setColor(16711680)
-        response.setFooter('Echelon v2.6')
+        response.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
         msg.channel.send(response)
     } else {
         msg.channel.send('something went wrong... try again!')
