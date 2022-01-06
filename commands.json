@@ -1,9 +1,4 @@
 {
-    "about": {
-        "description": "Learn more about the Echelon bot and how it was made!",
-        "filename": "about.js",
-        "usage": "about"
-    },
     "apex": {
         "description": "Get apex stats for yourself or a homie",
         "filename": "apex.js",
@@ -55,7 +50,10 @@
             "example": "`remind -t [3:30 pm] -m 'wake up!' @andrew`",
             "reminder": "Parameters that include spaces must be surrounded by `[brackets]`, `\"double quotes\"`, or `'single quotes'`"
         },
-        "options": ["list", "pm"]
+        "options": [
+            "list",
+            "pm"
+        ]
     },
     "remindold": {
         "description": "This is the old remind command! Use `remind` instead.",
@@ -65,7 +63,9 @@
             "time format": "Use `HH:MM:SS` + `AM` and `PM`. \neg. `11:34:00 PM`",
             "reminder": "Spaces in the `time` or `message` parameters must be surrounded in either `[brackets]`, `\"double quotes\"`, or `'single quotes'`"
         },
-        "options": ["list"]
+        "options": [
+            "list"
+        ]
     },
     "serverstats": {
         "description": "Vanilla and bot-generated Discord statistics for server",

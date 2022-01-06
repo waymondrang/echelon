@@ -3,10 +3,7 @@ const commands = require('./commands.json');
 const config = require("./config.json");
 const client = new discord.Client();
 const MongoClient = require('mongodb').MongoClient;
-const {
-    banned,
-    special
-} = require('./banned-words.json')
+const { banned, special } = require('./banned-words.json')
 const bad_word_regex = !banned.length && !special.length ? null : new RegExp((banned.map(word => word.split('').map(letter => letter + '+').join('\\s*'))).concat(special).join("|"));
 
 if (config['mongo-uri']) {
@@ -64,7 +61,6 @@ async function notify(mongo, client) {
     }
 }
 
-
 client.once('ready', async () => {
     console.log('echelon initializing!')
     try {
@@ -92,37 +88,88 @@ client.once('ready', async () => {
             }, 30000)
         }
     }
-})
-
-// * v2 COMMAND PROTOCOL
-var V2_COMMANDS = {};
-var N_PATH = require("path").join(__dirname, "commands");
-
-require("fs").readdirSync(N_PATH).forEach(function (FILE) {
-    if (FILE.includes("prototype")) {
-        var V2_COMMAND = new (require("./commands/" + FILE))();
-        V2_COMMANDS[V2_COMMAND.alias] = V2_COMMAND;
-    }
 });
 
-var helpmessage = new discord.MessageEmbed()
-helpmessage.setTitle('`available commands:`');
-helpmessage.setDescription(`\`[brackets]\` can be used to surround a parameter that contains more than one word\neg. \`${config['prefix']}example [echelon bot] [is the best]\``)
-helpmessage.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
-for (command in commands) {
-    helpmessage.addField(`${command}`, `\`${config['prefix']}${commands[command]['usage']}\``, true)
-}
-for (command in V2_COMMANDS) {
-    helpmessage.addField(`${command.alias}`, `\`${config['prefix']}${command.description}\``, true)
-}
-console.log('help message generated!');
+// * REQUIRED V2 VARIABLES
+var categories;
+var v2_commands;
+var command_folder_path = require("path").join(__dirname, "commands");
 
+function load_v2_commands() {
+    // * v2 COMMAND PROTOCOL
+    categories = [];
+    v2_commands = {};
+
+    require("fs").readdirSync(command_folder_path).forEach(function (file) {
+        if (file.includes("prototype")) {
+            var V2_COMMAND = new (require("./commands/" + file))();
+            v2_commands[V2_COMMAND.alias] = V2_COMMAND;
+            if (!categories.includes(V2_COMMAND.category)) categories.push(V2_COMMAND.category);
+        }
+    });
+};
+
+load_v2_commands();
+
+// * REQUIRED HELP MESSAGE VARIABLES
+var help_message;
+
+function create_help_message() {
+    help_message = null;
+    help_message = new discord.MessageEmbed()
+    help_message.setTitle('`available commands:`');
+    help_message.setDescription(`${config["use_new_help_message"] ? `\n*\`use_new_help_message\` is enabled. only commands using \`protocol v2\` support this feature.` : ""}`)
+    help_message.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
+    if (config["use_new_help_message"]) {
+        for (category of categories) {
+            help_message.addField(`${category}`, Object.entries(v2_commands).filter(function ([command, command_class]) { return command_class.category === category }).map(function (e) { return `\`${e[0]}\`` }), true)
+        }
+        help_message.addField(`general`, Object.keys(commands).map(function (e) { return `\`${e}\`` }), true)
+    } else {
+        for (command in commands) {
+            help_message.addField(`${command}`, `\`${config['prefix']}${commands[command]['usage']}\``, true)
+        }
+        for (command in v2_commands) {
+            help_message.addField(`${command}`, `\`${config['prefix']}${v2_commands[command].description}\``, true)
+        }
+    }
+    console.log('help message generated!');
+};
+
+create_help_message();
 
 client.on('message', async msg => {
-    if (msg.author.id !== client.user.id) {
+    if (config["global_admin_ids"].includes(msg.author.id)) {
+        var content = msg.content.toString().toLowerCase().replace(/  +/g, ' ').match(/\".*?\"|\'.*?\'|\[.*?\]|\S+/gm).map(each => each.replace(/[\[\]\"\']/gm, '').trim());
+        var command = content[0].replace(config['prefix'], "");
+        if (command === "kill") {
+            var embed = new discord.MessageEmbed()
+            embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`);
+            embed.setDescription("shutting off. bye bye!");
+            await msg.channel.send(embed);
+            process.exit();
+        } else if (command === "restart") {
+            var embed = new discord.MessageEmbed()
+            embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`);
+            embed.setDescription("restarting. be right back!");
+            await msg.channel.send(embed);
+            setTimeout(function () {
+                process.on("exit", function () {
+                    require("child_process").spawn(process.argv.shift(), process.argv, {
+                        cwd: process.cwd(),
+                        detached: true,
+                        stdio: "inherit"
+                    });
+                });
+                process.exit();
+            }, 5000);
+            return;
+        }
+    }
+    if (msg.author.id !== client.user.id && !msg.author.bot && !msg.author.system) {
         if (msg.channel.type == 'text') {
             //if connected to mongo, increment messages count
-            if (config['mongo-uri']) await mongo.db(msg.guild.id).collection('user-data').updateOne({ _id: msg.author.id }, { $inc: { "messages-sent": 1 }, $set: { displayName: msg.member.displayName, username: msg.member.user.username } }, { upsert: true });
+            if (config['mongo-uri']) await mongo.db(msg.guild.id).collection('user-data').updateOne({ _id: msg.author.id }, { $inc: { "messages-sent": 1 }, $set: { displayName: msg.member ? msg.member.displayName : msg.author.username, username: msg.author.username } }, { upsert: true });
             if (bad_word_regex && bad_word_regex.test(msg.content.toLowerCase())) {
                 console.log(`${msg.author.username} said a bad word in ${msg.guild.name}!`);
                 msg.react('⚠️');
@@ -135,7 +182,7 @@ client.on('message', async msg => {
                 var content = msg.content.toString().toLowerCase().replace(/  +/g, ' ').match(/\".*?\"|\'.*?\'|\[.*?\]|\S+/gm).map(each => each.replace(/[\[\]\"\']/gm, '').trim());
                 content[0] = content[0].replace(config['prefix'], "");
                 // ! console.log(content)
-                if (content[0] == `help`) {
+                if (content[0] === `help`) {
                     console.log(`${msg.author.username} requested for help in ${msg.guild.name}`)
                     if (content[1]) {
                         if (commands[content[1]]) {
@@ -149,20 +196,26 @@ client.on('message', async msg => {
                                 help.addField(`${field}`, `${commands[content[1]]['more-info'][field]}`)
                             }
                             msg.channel.send(help)
-                        } else if (V2_COMMANDS[content[1]]) {
-                            var help = new discord.MessageEmbed()
-                            help.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
-                            help.setTitle(`\`${config['prefix']}${content[1]}\``)
-                            help.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                            help.setDescription(V2_COMMANDS[content[1]].description ? V2_COMMANDS[content[1]].description : "\'no description provided\'")
-                            help.addField(`usage`, `\`${V2_COMMANDS[content[1]].usage ? `${config['prefix']}${V2_COMMANDS[content[1]].usage}` : "no usage provided"}\``)
-                            msg.channel.send(help)
+                        } else if (v2_commands[content[1]]) {
+                            if (typeof v2_commands[content[1]].description === discord.MessageEmbed) {
+                                msg.channel.send(v2_commands[content[1]].description)
+                            } else {
+                                var help = new discord.MessageEmbed()
+                                help.setFooter(`${config["bot_name"]}${config["display_version_number"] ? ` ${config["version_number"]}` : ""}`);
+                                help.setTitle(`\`${config['prefix']}${content[1]}\``);
+                                help.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`);
+                                help.setDescription(v2_commands[content[1]].description ? v2_commands[content[1]].description : "\'no description provided\'");
+                                msg.channel.send(help);
+                            }
                         } else {
-                            msg.channel.send(`that command does not exist! use \`${config['prefix']}help\` to be enlightened`)
+                            var embed = new discord.MessageEmbed();
+                            embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`);
+                            embed.setDescription(config["messages"]["command_does_not_exist"].replace(/\%/gm, config['prefix']));
+                            msg.channel.send(embed);
                         }
                     } else {
-                        helpmessage.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
-                        msg.channel.send(helpmessage)
+                        help_message.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`)
+                        msg.channel.send(help_message)
                     }
                 } else if (commands[content[0]]) {
                     try {
@@ -175,10 +228,13 @@ client.on('message', async msg => {
                         console.error('something went wrong! (most likey command does not path property in json file)')
                         console.log(err)
                     }
-                } else if (V2_COMMANDS[content[0]]) {
-                    V2_COMMANDS[content[0]].main({ message: msg, client: client, config: config });
+                } else if (v2_commands[content[0]]) { // IF V2 COMMAND INVOKED
+                    v2_commands[content[0]].main({ message: msg, client: client, config: config, content: content });
                 } else {
-                    msg.channel.send(`that command does not exist! use \`${config['prefix']}help\` to be enlightened`)
+                    var embed = new discord.MessageEmbed();
+                    embed.setColor(`0x${config['colors'][Math.floor(Math.random() * config['colors'].length)]}`);
+                    embed.setDescription(config["messages"]["command_does_not_exist"].replace(/\%/gm, config['prefix']));
+                    msg.channel.send(embed);
                 }
             }
         } else if (msg.channel.type == 'dm') {
